@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - Werkzeugverwaltung</title>
+    <link rel="stylesheet" type="text/css" href="style2.css">
+    <style>
+        .container {
+            max-width: 1000px;
+        }
+    </style>
+</head>
+<body style="height: 100% !important; flex-wrap: wrap;">
+    <div class="container" style="margin-bottom: 10px;">
+        <h1>Admin - Werkzeugverwaltung</h1>
+        
+        <h2>Neues Werkzeug hinzufügen</h2>
+        <form action="admin/werkzeug/neu" method="POST" enctype="multipart/form-data">
+            <label for="name">Werkzeugname:</label>
+            <input id="name" type="text" name="name" required>
+            <label for="kalibrierzeitraum">Kalibrierzeitraum:</label>
+            <input id="kalibrierzeitraum" type="date" name="kalibrierzeitraum">
+            <label for="lagerort">Lagerort:</label>
+            <input id="lagerort" type="text" name="lagerort">
+            <label for="kalibrierpflichtig">Kalibrierpflichtig:</label>
+            <select id="kalibrierpflichtig" name="kalibrierpflichtig">
+                <option value="true">Ja</option>
+                <option value="false">Nein</option>
+            </select>
+            <label for="bild">Bild hochladen:</label>
+            <input id="bild" type="file" name="bild">
+            <button type="submit">Hinzufügen</button>
+        </form>
+    </div>
+    <div class="container">
+
+        <h2>Werkzeuge bearbeiten/löschen</h2>
+        <label for="filterName">Filter nach Name:</label>
+        <input id="filterName" type="text" id="filterName" onkeyup="filterTable()">
+        <label for="filterId">Filter nach ID:</label>
+        <input id="filterId" type="text" id="filterId" onkeyup="filterTable()">
+        
+        <table id="werkzeugeTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Lagerort</th>
+                    <th>Cal. Datum</th>
+                    <th>Cal. Pflicht</th>
+                    <th>Bild</th>
+                    <th>QR Code</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% werkzeuge.forEach(werkzeug => { %>
+                    <tr>
+                        <td><%= werkzeug.id %></td>
+                        <td><%= werkzeug.name %></td>
+                        <td><%= werkzeug.lagerort %></td>
+                        <td><%= werkzeug.kalibrierzeitraum ? werkzeug.kalibrierzeitraum.toISOString().split('T')[0] : '' %></td>
+                        <td><%= werkzeug.kalibrierpflichtig ? 'Ja' : 'Nein' %></td>
+                        <td><img style="max-height: 130px;" src="api/werkzeug/image/<%= werkzeug.id %>" alt="Werkzeug Bild"></td>
+                        <td><img style="max-height: 130px;" src="api/qrcode/<%= werkzeug.id %>" alt="QR Code"></td>
+                        <td>
+                            <form action="admin/werkzeug/edit/<%= werkzeug.id %>" method="POST" enctype="multipart/form-data">
+                                <input type="text" name="name" value="<%= werkzeug.name %>" required>
+                                <input type="text" name="lagerort" value="<%= werkzeug.lagerort %>">
+                                <input type="date" name="kalibrierzeitraum" value="<%= werkzeug.kalibrierzeitraum ? werkzeug.kalibrierzeitraum.toISOString().split('T')[0] : '' %>">
+                                <select name="kalibrierpflichtig">
+                                    <option value="true" <%= werkzeug.kalibrierpflichtig ? 'selected' : '' %>>Ja</option>
+                                    <option value="false" <%= !werkzeug.kalibrierpflichtig ? 'selected' : '' %>>Nein</option>
+                                </select>
+                                <input type="file" name="bild">
+                                <input type="hidden" name="bildAlt" value="<%= werkzeug.bild %>">
+                                <button type="submit">Bearbeiten</button>
+                            </form>
+                            <form action="admin/werkzeug/delete/<%= werkzeug.id %>" method="POST">
+                                <button type="submit">Löschen</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+
+        <form action="logout" method="GET">
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+
+    <script>
+        function filterTable() {
+            const filterName = document.getElementById('filterName').value.toLowerCase();
+            const filterId = document.getElementById('filterId').value.toLowerCase();
+            const table = document.getElementById('werkzeugeTable');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                const id = cells[0].textContent.toLowerCase();
+                const name = cells[1].textContent.toLowerCase();
+
+                if (id.includes(filterId) && name.includes(filterName)) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Werkzeug Suche</title>
+    <link rel="stylesheet" type="text/css" href="style2.css">
+    <script src="/werkzeug/script.js"></script>
+    <script>
+        let timeout = null;
+
+        async function sucheWerkzeuge() {
+            const name = document.getElementById('suchfeld').value;
+
+            if (timeout) {
+                clearTimeout(timeout);
+            }
+
+            timeout = setTimeout(async () => {
+                const response = await fetch(`/werkzeug/api/suche?name=${name}`);
+                const werkzeuge = await response.json();
+                const dropdown = document.getElementById('vorschlaege');
+                dropdown.innerHTML = '';
+                werkzeuge.forEach(werkzeug => {
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify(werkzeug); // Speichere das gesamte Werkzeugobjekt als JSON-String
+                    option.textContent = werkzeug.name;
+                    dropdown.appendChild(option);
+                });
+            }, 500);
+        }
+
+        async function zeigeWerkzeugDetails() {
+            const dropdown = document.getElementById('vorschlaege');
+            const werkzeug = JSON.parse(dropdown.value); // Parse das JSON-String zurück zu einem Objekt
+
+            if (!werkzeug) return;
+
+            // Tabelle aktualisieren
+            const tabelle = document.getElementById('werkzeugDetails');
+            tabelle.innerHTML = `
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Lagerort</th>
+                    <th>Bild</th>
+                    <th>Cal. Datum</th>
+                    <th>Aktion</th>
+                </tr>
+                <tr>
+                    <td>${werkzeug.id}</td>
+                    <td>${werkzeug.name}</td>
+                    <td>${werkzeug.lagerort}</td>
+                    <td><img src="/werkzeug/api/werkzeug/image/${werkzeug.id}" alt="${werkzeug.name}" width="100" onerror="this.style.display='none'"></td>
+                    <td>${formatDate_only(werkzeug.kalibrierzeitraum)}</td>
+                    <td>
+                        <input type="text" id="lfz_kennzeichen" placeholder="LFZ Kennzeichen" required>
+                        <br>
+                        <input type="text" id="personalnummer" placeholder="Personalnummer" required>
+                        <br>
+                        <button onclick="ausleihen(${werkzeug.id})">Ausleihen</button>
+                    </td>
+                </tr>
+            `;
+
+            // Kalibrierzeitraum überprüfen
+            if (werkzeug.kalibrierzeitraum) {
+                const kalibrierzeitraum = new Date(werkzeug.kalibrierzeitraum);
+                const now = new Date();
+                if (kalibrierzeitraum < now) {
+                    const warningSpan = document.createElement('span');
+                    warningSpan.style.color = 'red';
+                    warningSpan.textContent = " Achtung, Kalibrierung fällig!";
+                    tabelle.querySelector('td:nth-child(5)').appendChild(warningSpan);
+                }
+            }
+        }
+
+        async function ausleihen(werkzeug_id) {
+            const lfz_kennzeichen = document.getElementById('lfz_kennzeichen').value;
+            const personalnummer = document.getElementById('personalnummer').value;
+
+            const response = await fetch('/werkzeug/api/werkzeug/ausleihen', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ werkzeug_id, lfz_kennzeichen, personalnummer })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        }
+    </script>
+</head>
+
+<body>
+    <div class="homebutton">
+        <a href="/werkzeug/">Home</a>
+    </div>
+    <div class="container">
+        <h1>Werkzeug Suche</h1>
+        <input style="width: 25vw; margin-bottom: 5px; max-width: 200px;" type="text" id="suchfeld"
+            oninput="sucheWerkzeuge()" placeholder="Werkzeugname eingeben...">
+        <br>
+        <select style="width: calc(25vw + 20px); max-width: 220px;" id="vorschlaege" size="5"
+            onchange="zeigeWerkzeugDetails()"></select>
+
+        <h2>Werkzeug Details</h2>
+        <table id="werkzeugDetails" border="1">
+            <!-- Details werden hier eingefügt -->
+        </table>
+    </div>
+</body>
+
+</html>

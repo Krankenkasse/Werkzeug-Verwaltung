@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auswertung je LFZ</title>
+    <link rel="stylesheet" type="text/css" href="/werkzeug/style2.css">
+    <script src="/werkzeug/script.js"></script>
+</head>
+<body>
+    <div class="homebutton">
+        <a href="/werkzeug/">Home</a>
+    </div>
+    <div class="container">
+        <h1>Werkzeuge je LFZ</h1>
+        <form id="searchForm">
+            <label for="lfz_kennzeichen">LFZ-Kennzeichen:</label>
+            <input id="lfz_kennzeichen" type="text" name="lfz_kennzeichen" id="lfz_kennzeichen" required>
+            <button type="submit">Suchen</button>
+        </form>
+
+        <h2>Ergebnisse</h2>
+        <table id="resultsTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>LFZ-Kennzeichen</th>
+                    <th>Pers. Nr.</th>
+                    <th>Bild</th>
+                    <th>Lagerort</th>
+                    <th>Cal. Pflicht</th>
+                    <th>Cal. Datum</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const lfz_kennzeichen = document.getElementById('lfz_kennzeichen').value;
+            const response = await fetch(`/werkzeug/api/auswertung/lfz/${lfz_kennzeichen}`);
+            const data = await response.json();
+
+            const table = document.getElementById('resultsTable');
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = ''; // Clear previous results
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.lfz_kennzeichen.toUpperCase() || ''}.</td>
+                    <td>${item.personalnummer || ''}</td>
+                    <td><img style="max-height: 150px;" src="/werkzeug/api/werkzeug/image/${item.werkzeug_id}" alt="${item.name}" onerror="this.style.display='none'"></td>
+                    <td>${item.lagerort || ''}</td>
+                    <td>${item.kalibrierpflichtig ? 'Nein' : 'Ja'}</td>
+                    <td>${formatDate_only(item.kalibrierzeitraum)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            table.style.display = 'table';
+        });
+    </script>
+</body>
+</html>

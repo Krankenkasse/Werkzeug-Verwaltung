@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kalibrierungsauswertung</title>
+    <link rel="stylesheet" type="text/css" href="style2.css">
+</head>
+<body>
+    <div class="homebutton">
+        <a href="/werkzeug/">Home</a>
+    </div>
+    <div class="container">
+        <h1>Werkzeuge zur Kalibrierung</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Werkzeug Name</th>
+                    <th>Lagerort</th>
+                    <th>Bild</th>
+                    <th>Kalibrierung fällig am</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% werkzeuge.forEach(werkzeug => { %>
+                    <tr>
+                        <td><%= werkzeug.name %></td>
+                        <td><%= werkzeug.lagerort %></td>
+                        <td><img src="api/werkzeug/image/<%= werkzeug.id %>" alt="Bild des Werkzeugs" style="max-width: 100px;" onerror="this.style.display='none'"></td>
+                        <td><%= werkzeug.kalibrierzeitraum %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

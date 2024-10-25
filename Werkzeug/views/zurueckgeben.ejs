@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Werkzeug zurückgeben</title>
+    <link rel="stylesheet" type="text/css" href="style2.css">
+</head>
+<body>
+    <div class="homebutton">
+        <a href="/werkzeug/">Home</a>
+    </div>
+    <div class="container">
+        <h1>Werkzeug zurückgeben</h1>
+
+        <h2>Werkzeug mit QR-Code zurückgeben</h2>
+        <form id="qrForm" action="api/werkzeug/zurueckgeben" method="POST">
+            <label for="werkzeug_id">Werkzeug ID (QR-Code scannen):</label>
+            <input id="werkzeug_id" type="text" id="werkzeug_id" name="werkzeug_id" required>
+            <label for="personalnummer">Personalnummer:</label>
+            <input id="personalnummer" type="text" id="personalnummer" name="personalnummer" required>
+            <button type="submit">Zurückgeben</button>
+        </form>
+
+        <hr>
+
+        <h2>Werkzeuge nach Personalnummer anzeigen</h2>
+        <form id="personalnummerForm">
+            <label for="personalnummer_suche">Personalnummer:</label>
+            <input id="personalnummer_suche" type="text" id="personalnummer_suche" required>
+            <button type="button" onclick="zeigeWerkzeuge()">Anzeigen</button>
+        </form>
+
+        <div id="ausgelieheneWerkzeuge"></div>
+        <div id="apiResponse"></div>
+    </div>
+
+    <script>
+        async function zeigeWerkzeuge() {
+            const personalnummer = document.getElementById('personalnummer_suche').value;
+            if (!personalnummer) {
+                alert('Bitte Personalnummer eingeben');
+                return;
+            }
+
+            const response = await fetch(`api/ausgeliehene-werkzeuge/${personalnummer}`);
+            const werkzeuge = await response.json();
+
+            const werkzeugeDiv = document.getElementById('ausgelieheneWerkzeuge');
+            werkzeugeDiv.innerHTML = '';  // Lösche alte Ergebnisse
+
+            if (werkzeuge.length === 0) {
+                werkzeugeDiv.innerHTML = '<p>Keine ausgeliehenen Werkzeuge gefunden</p>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <tr>
+                    <th>Name</th>
+                    <th>ID</th>
+                    <th>Ausgeliehen am</th>
+                    <th>Bild</th>
+                    <th>Aktion</th>
+                </tr>
+            `;
+
+            werkzeuge.forEach(werkzeug => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${werkzeug.name}</td>
+                    <td>${werkzeug.id}</td>
+                    <td>${new Date(werkzeug.ausleihe_datum).toLocaleDateString()}</td>
+                    <td><img src="api/werkzeug/image/${werkzeug.id}" alt="${werkzeug.name}"></td>
+                    <td><button onclick="zurueckgeben(${werkzeug.id}, '${personalnummer}')">Zurückgeben</button></td>
+                `;
+                table.appendChild(row);
+            });
+
+            werkzeugeDiv.appendChild(table);
+        }
+
+        async function zurueckgeben(werkzeug_id, personalnummer) {
+            try {
+                const response = await fetch('api/werkzeug/zurueckgeben', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ werkzeug_id, personalnummer }),
+                    redirect: 'follow'
+                });
+
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+
+                const result = await response.json();
+                const apiResponseDiv = document.getElementById('apiResponse');
+                if (result.success) {
+                    apiResponseDiv.innerHTML = `<p style="color: green;">${result.message}</p>`;
+                    zeigeWerkzeuge();
+                } else {
+                    apiResponseDiv.innerHTML = `<p style="color: red;">Fehler bei der Rückgabe: ${result.error}</p>`;
+                }
+            } catch (error) {
+                console.error('Fehler bei der Anfrage:', error);
+                document.getElementById('apiResponse').innerHTML = `<p style="color: red;">Fehler bei der Anfrage: ${error.message}</p>`;
+            }
+        }
+
+        document.getElementById('qrForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const werkzeug_id = document.getElementById('werkzeug_id').value;
+            const personalnummer = document.getElementById('personalnummer').value;
+
+            try {
+                const response = await fetch('api/werkzeug/zurueckgeben', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ werkzeug_id, personalnummer }),
+                    redirect: 'follow'
+                });
+
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+
+                const result = await response.json();
+                const apiResponseDiv = document.getElementById('apiResponse');
+                if (result.success) {
+                    apiResponseDiv.innerHTML = `<p style="color: green;">${result.message}</p>`;
+                    document.getElementById('qrForm').reset();
+                } else {
+                    apiResponseDiv.innerHTML = `<p style="color: red;">Fehler bei der Rückgabe: ${result.message}</p>`;
+                }
+            } catch (error) {
+                console.error('Fehler bei der Anfrage:', error);
+                document.getElementById('apiResponse').innerHTML = `<p style="color: red;">Fehler bei der Anfrage: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

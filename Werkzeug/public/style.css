@@ -1,0 +1,270 @@
+:root {
+    --blue: #007bff;
+    --indigo: #6610f2;
+    --purple: #6f42c1;
+    --pink: #e83e8c;
+    --red: #dc3545;
+    --orange: #fd7e14;
+    --yellow: #ffc107;
+    --green: #28a745;
+    --teal: #20c997;
+    --cyan: #17a2b8;
+    --white: #fff;
+    --gray: #6c757d;
+    --gray-dark: #343a40;
+    --primary: #007bff;
+    --secondary: #6c757d;
+    --success: #28a745;
+    --info: #17a2b8;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --light: #f8f9fa;
+    --dark: #343a40;
+    --gablue: #13306c;
+    --hover: #20399d;
+    --buttons: #006ee5;
+}
+
+.myButton {
+    padding: 6px 24px;
+    background-color: var(--buttons);
+    color: var(--white);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: inline-block;
+    border: 2px solid #337fed;
+    margin: 10px;
+    width: 80%;
+}
+
+.myButton:hover {
+    background-color: var(--hover);
+    border: 2px solid var(--hover);
+    color: var(--white);
+}
+
+.myButton:active {
+    position: relative;
+    top: 1px;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+}
+
+h1 {
+    color: var(--white);
+    text-align: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+input {
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid var(--gray);
+    border-radius: 4px;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: var(--dark);
+}
+
+#successMessage {
+    margin-top: 20px;
+    color: var(--success);
+    text-align: center;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table,
+th,
+td {
+    border: 1px solid var(--gray);
+}
+
+th,
+td {
+    padding: 3px;
+    text-align: left;
+}
+
+img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.header {
+    background-color: var(--gablue);
+    color: var(--white);
+    padding: 20px;
+    text-align: center;
+}
+
+.header img {
+    max-width: 200px;
+    vertical-align: middle;
+    padding-bottom: 15px;
+}
+
+.header h1 {
+    display: inline;
+    margin-left: 10px;
+}
+
+.main-content {}
+
+.nav-container {
+    background-color: var(--secondary);
+    padding: 10px;
+    width: 85%;
+}
+
+.nav-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.nav-container ul li {
+    margin: 10px 0;
+}
+
+.nav-container ul li a {
+    color: var(--white);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.nav-container ul li a:hover {
+    text-decoration: underline;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin: auto;
+    background-color: var(--white);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80vw;
+    margin-top: 20px !important;
+}
+
+.footer {
+    background-color: var(--dark);
+    color: var(--white);
+    text-align: center;
+    position: fixed;
+    width: 100vw;
+    bottom: 0;
+}
+
+.history-table {
+    flex: 2;
+    overflow-x: auto;
+
+}
+
+ul {
+    padding: 0px;
+}
+
+.main-content {
+    flex: 1;
+}
+
+.history-table {
+    flex: 2;
+}
+
+@media (max-width: 1200px) {
+    .container {
+        width: 90vw !important;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .container {
+        width: 95vw;
+        padding: 10px;
+    }
+
+    .myButton {
+        padding: 4px 20px;
+        font-size: 10px;
+        width: 80% !important;
+    }
+    .history-table {
+        overflow-x: auto;
+        width: 95%;
+    }
+}
+
+@media (max-width: 1090px) {
+    .container {
+        flex-direction: column;
+        flex-wrap: wrap !important;
+        width: 95vw;
+        padding: 10px;
+    }
+
+    .main-content {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .myButton {
+        width: 90%;
+        font-size: 14px;
+    }
+
+    table,
+    th,
+    td {
+        font-size: 12px;
+    }
+
+    .header img {
+        max-width: 150px;
+    }
+
+    .header h1 {
+        font-size: 20px;
+    }
+}

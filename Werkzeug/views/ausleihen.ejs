@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Werkzeug ausleihen</title>
+    <link rel="stylesheet" type="text/css" href="style2.css">
+</head>
+
+<body>
+    <div class="homebutton">
+        <a href="/werkzeug/">Home</a>
+    </div>
+    <div class="container">
+        <h1>Werkzeug ausleihen</h1>
+        <form id="ausleihenForm" action="api/werkzeug/ausleihen" method="POST">
+            <label for="werkzeug_id">Werkzeug ID (Enter zum bestätigen):</label>
+            <input id="werkzeug_id" type="text" name="werkzeug_id" id="werkzeug_id" required>
+            <label for="werkzeug_name">Werkzeug Name:</label>
+            <input id="werkzeug_name" disabled type="text" name="werkzeug_name" id="werkzeug_name">
+            <label for="lfz_kennzeichen">LFZ-Kennzeichen:</label>
+            <input id="lfz_kennzeichen" type="text" name="lfz_kennzeichen" required>
+            <label for="personalnummer">Personalnummer:</label>
+            <input id="personalnummer" type="text" name="personalnummer" required>
+            <button type="submit">Ausleihen</button>
+        </form>
+        <div id="successMessage" style="display: none;">Das Werkzeug wurde erfolgreich ausgeliehen!</div>
+        <h2>Bild des Werkzeugs</h2>
+        <img id="werkzeugBild" src="" alt="Bild des Werkzeugs" style="max-width: 300px; display: none;">
+    </div>
+
+    <script>
+        const werkzeugInput = document.getElementById('werkzeug_id');
+        const werkzeugNameInput = document.getElementById('werkzeug_name');
+        const werkzeugBild = document.getElementById('werkzeugBild');
+        const ausleihenForm = document.getElementById('ausleihenForm');
+        const successMessage = document.getElementById('successMessage');
+
+        werkzeugInput.addEventListener('keypress', async function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const selectedWerkzeug = werkzeugInput.value;
+                if (selectedWerkzeug) {
+                    werkzeugBild.src = 'api/werkzeug/image/' + selectedWerkzeug;
+                    werkzeugBild.style.display = 'block';
+
+                    try {
+                        const response = await fetch('api/werkzeug/id/' + selectedWerkzeug);
+                        if (!response.ok) {
+                            throw new Error('Netzwerkantwort war nicht ok');
+                        }
+                        const werkzeugName = await response.text();
+                        werkzeugNameInput.value = werkzeugName;
+                    } catch (error) {
+                        console.error('Es gab ein Problem mit der Fetch-Operation:', error);
+                    }
+                } else {
+                    werkzeugBild.style.display = 'none';
+                    werkzeugNameInput.value = '';
+                }
+            }
+        });
+
+        ausleihenForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const formData = new FormData(ausleihenForm);
+            const data = {
+                werkzeug_id: formData.get('werkzeug_id'),
+                lfz_kennzeichen: formData.get('lfz_kennzeichen'),
+                personalnummer: formData.get('personalnummer')
+            };
+            try {
+                const response = await fetch(ausleihenForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success === false) {
+                        successMessage.style.color = 'red';
+                    }
+                    successMessage.textContent = result.message;
+                    successMessage.style.display = 'block';
+                    if (result.kalibrierzeitraum) {
+                        const kalibrierzeitrum = new Date(result.kalibrierzeitraum);
+                        const now = new Date();
+                        console.log(kalibrierzeitrum, now);
+                        console.log(result.kalibrierzeitrum)
+                        if (kalibrierzeitrum < now) {
+                            const warningSpan = document.createElement('span');
+                            warningSpan.style.color = 'red';
+                            warningSpan.textContent = " Achtung, Kalibrierung fällig!";
+                            successMessage.appendChild(warningSpan);
+                        }
+                    }
+                } else {
+                    throw new Error('Netzwerkantwort war nicht ok');
+                }
+            } catch (error) {
+                console.error('Es gab ein Problem mit der Fetch-Operation:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>
